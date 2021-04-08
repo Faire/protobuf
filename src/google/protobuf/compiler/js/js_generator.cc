@@ -3372,7 +3372,7 @@ void Generator::GenerateEnum(const GeneratorOptions& options,
                              const EnumDescriptor* enumdesc) const {
   printer->Print(
       "/**\n"
-      " * @enum {number}\n"
+      " * @enum {string}\n"
       " */\n"
       "$enumprefix$$name$ = {\n",
       "enumprefix", GetEnumPathPrefix(options, enumdesc), "name",
@@ -3390,8 +3390,8 @@ void Generator::GenerateEnum(const GeneratorOptions& options,
   }
   for (auto i : valid_index) {
     const EnumValueDescriptor* value = enumdesc->value(i);
-    printer->Print("  $name$: $value$$comma$\n", "name",
-                   ToEnumCase(value->name()), "value", StrCat(value->number()),
+    printer->Print("  $name$: \"$value$\"$comma$\n", "name",
+                   ToEnumCase(value->name()), "value", StrCat(value->name()),
                    "comma", (i == valid_index.back()) ? "" : ",");
     printer->Annotate("name", value);
   }
