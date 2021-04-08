@@ -3195,12 +3195,15 @@ void Generator::GenerateClassDeserializeBinaryField(
       printer->Print(
           "      msg.add$name$(value);\n", "name",
           JSGetterName(options, field, BYTES_DEFAULT, /* drop_list = */ true));
+    } else if (field->ccp_type() == FieldDescriptor::CPPTYPE_ENUM) {
+      // We want to convert the enum value from number to key string
+      const enumPath = GetEnumPathPrefix(options, field->enum_type()) + field->enum_type()->name();
+      printer->Print("      msg.set$name$(Object.values($enumPath).find((key, index) => index === value));\n", "name", JSGetterName(options, field), "enumPath", enumPath);
     } else {
       // Singular fields, and packed repeated fields, receive a |value| either
       // as the field's value or as the array of all the field's values; set
       // this as the field's value directly.
-      printer->Print("      msg.set$name$(value);\n", "name",
-                     JSGetterName(options, field));
+      printer->Print("      msg.set$name$(value);\n", "name", JSGetterName(options, field));
     }
   }
 
@@ -3265,10 +3268,21 @@ void Generator::GenerateClassSerializeBinaryField(
                               /* force_present = */ false,
                               /* singular_if_not_packed = */ false,
                               /* bytes_mode = */ BYTES_DEFAULT);
-    printer->Print(
-        "  f = /** @type {$type$} */ "
-        "(jspb.Message.getField(message, $index$));\n",
-        "index", JSFieldIndex(field), "type", typed_annotation);
+
+    if (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
+      // We need to convert the enum value from key string to index number
+      const enumPath = GetEnumPathPrefix(options, field->enum_type()) + field->enum_type()->name();
+      printer->Print(
+                    "  f = /** @type {$type$} */ "
+                    "(Object.values($enumPath).reduce((acc, value, index) => value === jspb.Message.getField(message, $index$) ? index : 1));\n",
+                    "index", JSFieldIndex(field), "type", typed_annotation, "enumPath", enumPath);
+    } else {
+      printer->Print(
+              "  f = /** @type {$type$} */ "
+              "(jspb.Message.getField(message, $index$));\n",
+              "index", JSFieldIndex(field), "type", typed_annotation);
+    }
+
   } else {
     printer->Print(
         "  f = message.get$name$($nolazy$);\n", "name",
@@ -3378,7 +3392,6 @@ void Generator::GenerateEnum(const GeneratorOptions& options,
       "enumprefix", GetEnumPathPrefix(options, enumdesc), "name",
       enumdesc->name());
   printer->Annotate("name", enumdesc);
-
   std::set<std::string> used_name;
   std::vector<int> valid_index;
   for (int i = 0; i < enumdesc->value_count(); i++) {
