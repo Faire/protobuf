@@ -2392,9 +2392,9 @@ void Generator::GenerateClassFieldToObject(const GeneratorOptions& options,
       printer->Print("(f = ");
     }
     if (field->type() == FieldDescriptor::TYPE_ENUM) {
-      // For enums, emit the key name (not the ordinal/index).
+      // For enums, emit the key name (not the ordinal).
       printer->Print(
-        "Object.keys($enumprefix$$enumname$).find((key, index) => index === ",
+        "Object.keys($enumprefix$$enumname$).find((key) => $enumprefix$$enumname$[key] === ",
         "getter", JSGetterName(options, field),
         "enumprefix", GetEnumPathPrefix(options, field->enum_type()),
         "enumname", field->enum_type()->name());
