@@ -2559,7 +2559,7 @@ void Generator::GenerateClassFieldFromObject(
     } else {
       printer->Print(
            "  obj.$name$ != null && jspb.Message.setField(msg, $index$, "
-           "(obj.$name$ && obj.$name$.map(v => $enumprefix$$enumname$[obj.$name$]).filter(v => v !== undefined) || undefined));\n",
+           "(obj.$name$ && obj.$name$.map(v => $enumprefix$$enumname$[v]).filter(v => v !== undefined) || undefined));\n",
            "name", JSObjectFieldName(options, field),
            "index", JSFieldIndex(field),
            "enumprefix", GetEnumPathPrefix(options, field->enum_type()),
