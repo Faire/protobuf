@@ -130,8 +130,7 @@ jspb.Map.prototype.toArray = function () {
 };
 
 /**
- * Returns the map formatted as an array of key-value pairs, suitable for the
- * toObject() form of a message.
+ * Returns the map formatted as a plain JS object.
  *
  * @param {boolean=} includeInstance Whether to include the JSPB instance for
  *    transitional soy proto support: http://goto/soy-param-migration
@@ -141,16 +140,16 @@ jspb.Map.prototype.toArray = function () {
  */
 jspb.Map.prototype.toObject = function (includeInstance, valueToObject) {
   var rawArray = this.toArray();
-  var entries = [];
+  var entries = {};
   for (var i = 0; i < rawArray.length; i++) {
     var entry = this.map_[rawArray[i][0].toString()];
     this.wrapEntry_(entry);
     var valueWrapper = /** @type {V|undefined} */ (entry.valueWrapper);
     if (valueWrapper) {
       goog.asserts.assert(valueToObject);
-      entries.push([entry.key, valueToObject(includeInstance, valueWrapper)]);
+      entries[entry.key] = valueToObject(includeInstance, valueWrapper);
     } else {
-      entries.push([entry.key, entry.value]);
+      entries[entry.key] = entry.value;
     }
   }
   return Object.fromEntries(entries);
@@ -425,11 +424,9 @@ jspb.Map.prototype.serializeBinary = function (
         opt_valueWriterCallback
       );
     } else {
-      /** @type {function(this:jspb.BinaryWriter,number,?)} */ (valueWriterFn).call(
-        writer,
-        2,
-        entry.value
-      );
+      /** @type {function(this:jspb.BinaryWriter,number,?)} */ (
+        valueWriterFn
+      ).call(writer, 2, entry.value);
     }
     writer.endSubMessage();
   }
@@ -498,9 +495,9 @@ jspb.Map.deserializeBinary = function (
         }
         valueReaderFn.call(reader, value, opt_valueReaderCallback);
       } else {
-        value = /** @type {function(this:jspb.BinaryReader):?} */ (valueReaderFn).call(
-          reader
-        );
+        value = /** @type {function(this:jspb.BinaryReader):?} */ (
+          valueReaderFn
+        ).call(reader);
       }
     }
   }
