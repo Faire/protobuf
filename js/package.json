@@ -1,5 +1,5 @@
 {
-  "name": "google-protobuf",
+  "name": "@faire/protobuf",
   "version": "3.19.1",
   "description": "Protocol Buffers for JavaScript",
   "main": "google-protobuf.js",
@@ -8,6 +8,7 @@
   ],
   "dependencies": {},
   "devDependencies": {
+    "copyfiles": "^2.4.1",
     "glob": "~7.1.4",
     "google-closure-compiler": "~20190819.0.0",
     "google-closure-deps": "^20210406.0.0",
@@ -16,11 +17,18 @@
     "jasmine": "~3.4.0"
   },
   "scripts": {
-    "test": "node ./node_modules/gulp/bin/gulp.js test"
+    "test": "node ./node_modules/gulp/bin/gulp.js test",
+    "buildAndPublish": "npm-run-all clean build mkdirs copyCore copyCommonJS publishDist",
+    "clean": "rm -rf dist",
+    "build": "gulp make_commonjs_out",
+    "mkdirs": "mkdir -p dist/google",
+    "copyCore": "copyfiles package.json google-protobuf.js dist",
+    "copyCommonJS": "copyfiles -u 1 \"commonjs_out/google/**/*.js\" dist",
+    "publishDist": "cd dist && npm publish"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/protocolbuffers/protobuf/tree/master/js"
+    "url": "https://github.com/faire/protobuf"
   },
   "author": "Google Protocol Buffers Team",
   "license": "BSD-3-Clause"
