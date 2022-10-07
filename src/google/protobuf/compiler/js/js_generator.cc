@@ -343,24 +343,6 @@ std::string ToUpperCamel(const std::string& input) {
   return result;
 }
 
-// Based on code from descriptor.cc (Thanks Kenton!)
-// Uppercases the entire string, turning ValueName into
-// VALUENAME.
-std::string ToEnumCase(const std::string& input) {
-  std::string result;
-  result.reserve(input.size());
-
-  for (int i = 0; i < input.size(); i++) {
-    if ('a' <= input[i] && input[i] <= 'z') {
-      result.push_back(input[i] - 'a' + 'A');
-    } else {
-      result.push_back(input[i]);
-    }
-  }
-
-  return result;
-}
-
 std::string ToLower(const std::string& input) {
   std::string result;
   result.reserve(input.size());
@@ -2160,9 +2142,9 @@ void Generator::GenerateOneofCaseDefinition(
       " * @enum {number}\n"
       " */\n"
       "$classname$.$oneof$Case = {\n"
-      "  $upcase$_NOT_SET: 0",
+      "  $name$_NOT_SET: 0",
       "classname", GetMessagePath(options, oneof->containing_type()), "oneof",
-      JSOneofName(oneof), "upcase", ToEnumCase(oneof->name()));
+      JSOneofName(oneof), "name", oneof->name());
 
   for (int i = 0; i < oneof->field_count(); i++) {
     if (IgnoreField(oneof->field(i))) {
@@ -2171,8 +2153,8 @@ void Generator::GenerateOneofCaseDefinition(
 
     printer->Print(
         ",\n"
-        "  $upcase$: $number$",
-        "upcase", ToEnumCase(oneof->field(i)->name()), "number",
+        "  $name$: $number$",
+        "name", oneof->field(i)->name(), "number",
         JSFieldIndex(oneof->field(i)));
     printer->Annotate("upcase", oneof->field(i));
   }
@@ -3418,7 +3400,7 @@ void Generator::GenerateEnum(const GeneratorOptions& options,
   std::vector<int> valid_index;
   for (int i = 0; i < enumdesc->value_count(); i++) {
     if (enumdesc->options().allow_alias() &&
-        !used_name.insert(ToEnumCase(enumdesc->value(i)->name())).second) {
+        !used_name.insert(enumdesc->value(i)->name()).second) {
       continue;
     }
     valid_index.push_back(i);
@@ -3426,7 +3408,7 @@ void Generator::GenerateEnum(const GeneratorOptions& options,
   for (auto i : valid_index) {
     const EnumValueDescriptor* value = enumdesc->value(i);
     printer->Print("  $name$: $value$$comma$\n", "name",
-                   ToEnumCase(value->name()), "value", StrCat(value->number()),
+                   value->name(), "value", StrCat(value->number()),
                    "comma", (i == valid_index.back()) ? "" : ",");
     printer->Annotate("name", value);
   }
